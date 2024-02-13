@@ -23,10 +23,23 @@ namespace BulkyWeb.Controllers
         }
 
         //Create a new function that retuns IActionResult with what you need for new button
+        
+        //Just return the view
         public IActionResult Create() 
         {
             //We dont need to send nothing to the view because we are creating it in the view
             return View();
         }
+
+        //To use the post method
+        [HttpPost]
+        public IActionResult Create(Category obj)
+        {
+            _db.Categories.Add(obj);
+            _db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+
     }
 }
