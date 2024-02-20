@@ -23,9 +23,9 @@ namespace BulkyWeb.Controllers
         }
 
         //Create a new function that retuns IActionResult with what you need for new button
-        
+
         //Just return the view
-        public IActionResult Create() 
+        public IActionResult Create()
         {
             //We dont need to send nothing to the view because we are creating it in the view
             return View();
@@ -36,25 +36,27 @@ namespace BulkyWeb.Controllers
         public IActionResult Create(Category obj)
         {
             //Optional special validation
-            if(obj.Name.ToLower() == obj.DisplayOrder.ToString().ToLower()) 
+            if (obj.Name.ToLower() == obj.DisplayOrder.ToString().ToLower())
             {
-                ModelState.AddModelError("name","The DisplayOrder cannot exactly match the Name");
+                ModelState.AddModelError("name", "The DisplayOrder cannot exactly match the Name");
             }
-            if (ModelState.IsValid) { 
-            _db.Categories.Add(obj);
-            _db.SaveChanges();
+            if (ModelState.IsValid)
+            {
+                _db.Categories.Add(obj);
+                _db.SaveChanges();
+                return RedirectToAction("Index");
             }
             return View();
         }
         public IActionResult Edit(int? id)
         {
-            if(id==null || id==0)
+            if (id == null || id == 0)
             {
                 return NotFound();
             }
             Category? categoryFromDb = _db.Categories.Find(id);
             //Category? categoryFromDb = _db.Categories.FirstOrDefault(u => u.Id == id);
-            if(categoryFromDb == null)
+            if (categoryFromDb == null)
             {
                 return NotFound();
             }
@@ -66,16 +68,48 @@ namespace BulkyWeb.Controllers
         public IActionResult Edit(Category obj)
         {
             //Optional special validation
-            if (obj.Name.ToLower() == obj.DisplayOrder.ToString().ToLower())
-            {
-                ModelState.AddModelError("name", "The DisplayOrder cannot exactly match the Name");
-            }
+
             if (ModelState.IsValid)
             {
-                _db.Categories.Add(obj);
+                _db.Categories.Update(obj);
                 _db.SaveChanges();
+                return RedirectToAction("Index");
             }
             return View();
+        }
+
+        public IActionResult Delete(int? id)
+        {
+            if (id == null || id == 0)
+            {
+                return NotFound();
+            }
+            Category? categoryFromDb = _db.Categories.Find(id);
+            //Category? categoryFromDb = _db.Categories.FirstOrDefault(u => u.Id == id);
+            if (categoryFromDb == null)
+            {
+                return NotFound();
+            }
+            return View(categoryFromDb);
+        }
+
+        //To use the post method
+
+        [HttpPost,ActionName("Delete")]
+        public IActionResult DeletePOST(int? id)
+        {
+            //Optional special validation
+            Category? obj = _db.Categories.Find(id);
+            if (obj == null)
+            {
+                return NotFound();
+            }
+            _db.Categories.Remove(obj);
+
+            _db.SaveChanges();
+
+            return RedirectToAction("Index");
+            // return View();
         }
 
 
