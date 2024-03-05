@@ -10,10 +10,13 @@ namespace BulkyWeb.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IWebHostEnvironment _webHostEnviroment;
 
-        public ProductController(IUnitOfWork unitOfWork)
+        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnviroment)
         {
             _unitOfWork = unitOfWork;
+            _webHostEnviroment = webHostEnviroment;
+
         }
         public IActionResult Index()
         {
@@ -62,9 +65,25 @@ namespace BulkyWeb.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                //Get the wwwroot path from project
+                string wwwRootPath = _webHostEnviroment.WebRootPath;
+                if(file != null)
+                {
+                    //generate random number(guid) to replace name of file
+                    //then grab the extension of the file ej: .jpeg,.png
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    //Where the product is going to be stored
+                    string productPath = Path.Combine(wwwRootPath, @"images\product");
+
+                    using(var fileStream = new FileStream(Path.Combine(productPath,fileName),FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+                    productVM.Product.ImageUrl = @"\images\product\" + fileName;
+                }
                 _unitOfWork.Product.Add(productVM.Product);
                 _unitOfWork.Save();
-                TempData["success"] = "Category created successfully";
+                TempData["success"] = "Product created successfully";
                 return RedirectToAction("Index");
             }
             else
