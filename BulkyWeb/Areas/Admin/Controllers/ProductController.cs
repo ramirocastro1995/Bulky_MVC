@@ -3,6 +3,7 @@ using Bulky.Models;
 using Bulky.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text.Json.Serialization;
 
 namespace BulkyWeb.Areas.Admin.Controllers
 {
@@ -21,7 +22,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
         public IActionResult Index()
         {
             //Get everything to show in index
-            List<Product> objProductList = _unitOfWork.Product.GetAll().ToList();
+            List<Product> objProductList = _unitOfWork.Product.GetAll(includeProperties: "Category").ToList();
             
             return View(objProductList);
 
@@ -75,13 +76,33 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     //Where the product is going to be stored
                     string productPath = Path.Combine(wwwRootPath, @"images\product");
 
+
+                    //replace old file if new image uploaded
+                    if(!string.IsNullOrEmpty(productVM.Product.ImageUrl))
+                    {
+                        //Delete old image
+                        var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('\\'));
+                        if(System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
                     using(var fileStream = new FileStream(Path.Combine(productPath,fileName),FileMode.Create))
                     {
                         file.CopyTo(fileStream);
                     }
                     productVM.Product.ImageUrl = @"\images\product\" + fileName;
                 }
-                _unitOfWork.Product.Add(productVM.Product);
+
+                if (productVM.Product.Id == 0)
+                {
+                    _unitOfWork.Product.Add(productVM.Product);
+                }
+                else
+                {
+                    _unitOfWork.Product.Update(productVM.Product);
+                }
                 _unitOfWork.Save();
                 TempData["success"] = "Product created successfully";
                 return RedirectToAction("Index");
@@ -154,6 +175,15 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
 
         }
+
+        #region API CALLS
+        [HttpGet]
+        public IActionResult GetAll(int id)
+        {
+            List<Product> objProductList = _unitOfWork.Product.GetAll(includeProperties: "Category").ToList();
+            return Json(new { data = objProductList });
+        }
+        #endregion
 
     }
 }
