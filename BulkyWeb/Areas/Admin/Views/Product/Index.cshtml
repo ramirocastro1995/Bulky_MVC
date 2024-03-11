@@ -1,53 +1,42 @@
 ﻿ <!--Import the objCategoryList from the controller -->
 @model List<Product>
 
-<div class="container">
-    <div class="row pt-4">
+<div class="card shadow border-0 my-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
 
-        <div class="col-6">
-            <h2 class="text-primary">
-                Category List
-            </h2>
+            <div class="col-12 text-center">
+                <h1 class="text-primary">
+                    Product List
+                </h1>
+            </div>
         </div>
-
-        <div class="col-6 text-end">
-            <a asp-controller="Product" asp-action="Upsert" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i>Create New Product
-            </a>
-        </div>
-
     </div>
-    <table id="tblData" class="table table-bordered table-striped">
-        <thread>
-            <tr>
-                <th>
-                    Title
-                </th>
-                <th>
-                    Description
-                </th>
-                <th>
-                    ISBN
-                </th>
-                <th>
-                    Author
-                </th>
-                <th>
-                    Price
-                </th>
-                <th>
-                    Category
-                </th>
+    <div class="card-body p-4">
+        <div class="container">
+            <div class="pb-3">
+                <div class="col-6"></div>
+                <div class="col-6 text-end">
+                    <a asp-controller="Product" asp-action="Upsert" class="btn btn-primary">
+                        Create New Product<i class="bi bi-plus-circle"></i>
+                    </a>
+                </div>
+            </div>
 
-                <th></th>
-            </tr>
-        </thread>
-        <tbody>
-            <!--Use C# Code to move thru the category list,and show the information -->
-            <!--Model HAS to be in Uppercase first letter -->
-
-        </tbody>
-    </table>
+            <table id="tblData" class="table table-bordered table-stripped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>ISBN</th>
+                        <th>Price</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
 </div>
 
 @section Scripts{
