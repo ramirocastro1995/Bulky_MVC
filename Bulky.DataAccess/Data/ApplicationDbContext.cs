@@ -1,9 +1,11 @@
 ﻿using Bulky.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bulky.DataAccess.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         //Basic configuration for entity framework
         //This is the db context with the tables
@@ -14,9 +16,11 @@ namespace Bulky.DataAccess.Data
         //Create a DbSet with the Category class,that we create,and migrate to create in db
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         //Default funtion of EF for populate the table with initial information
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             //Using the modelBuilder,we select the class/table that we want to populate
             //Use .HasData to populate the table
             modelBuilder.Entity<Category>().HasData(
