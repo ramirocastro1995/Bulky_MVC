@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace Bulky.DataAccess.Data
 {
@@ -17,6 +19,7 @@ namespace Bulky.DataAccess.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<Company> Companies { get; set; }
         //Default funtion of EF for populate the table with initial information
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -75,6 +78,19 @@ namespace Bulky.DataAccess.Data
                     CategoryId = 3,
                     ImageUrl = ""
                 }
+                );
+            modelBuilder.Entity<Company>().HasData(
+                new Company
+                {
+                    Id = 1,
+                    Name = "Company Test",
+                    StreetAddress = "Fake Street 1",
+                    City = "Fake City",
+                    State = "Fake State",
+                    PostalCode = "ABC123",
+                    PhoneNumber = 12345
+                }
+
                 );
         }
     }
