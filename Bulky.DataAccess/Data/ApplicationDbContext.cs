@@ -20,6 +20,7 @@ namespace Bulky.DataAccess.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         //Default funtion of EF for populate the table with initial information
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

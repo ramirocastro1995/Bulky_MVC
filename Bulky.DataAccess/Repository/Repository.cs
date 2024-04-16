@@ -8,10 +8,11 @@ using Bulky.DataAccess.Data;
 using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Bulky.DataAccess.Repository
 {
-    
+
     public class Repository<T> : IRepository<T> where T : class
     {
         private readonly ApplicationDbContext _db;
@@ -27,10 +28,22 @@ namespace Bulky.DataAccess.Repository
             dbSet.Add(entity);
         }
 
-        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
+        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
         {
-            //Get the dbset to queryable to filter
-            IQueryable <T> query = dbSet;
+            IQueryable<T> query;
+            if (tracked)
+            {
+                //Get the dbset to queryable to filter
+                query = dbSet;
+                
+            }
+            else
+            {
+                //Get the dbset to queryable to filter
+                query = dbSet.AsNoTracking();
+                
+
+            }
             query = query.Where(filter);
             if (!string.IsNullOrEmpty(includeProperties))
             {
@@ -50,15 +63,15 @@ namespace Bulky.DataAccess.Repository
             if (!string.IsNullOrEmpty(includeProperties))
             {
                 foreach (var includeProp in includeProperties
-                    .Split(new char[] { ',' },StringSplitOptions.RemoveEmptyEntries))
-                    {
+                    .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
                     query = query.Include(includeProp);
                 }
             }
 
 
             return query.ToList();
-            
+
         }
 
         public void Remove(T entity)

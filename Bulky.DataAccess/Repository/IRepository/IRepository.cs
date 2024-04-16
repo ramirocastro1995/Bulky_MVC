@@ -12,7 +12,7 @@ namespace Bulky.DataAccess.Repository.IRepository
     {
         //T in this case will be Category
         IEnumerable<T> GetAll(string? includeProperties = null);
-        T Get(Expression<Func<T,bool>>filter, string? includeProperties = null);
+        T Get(Expression<Func<T,bool>>filter, string? includeProperties = null,bool tracked = false);
         void Add(T entity);
         //Leave Update to specific repository of the specific class
         //void Update(T entity);
