@@ -27,6 +27,8 @@ namespace Bulky.Models
 
         public DateTime PaymentDate { get; set; }
         public DateTime PaymentDueDate { get; set; }
+
+        public string? SessionId { get; set; }
         public string? PaymentIntentId { get; set; }
 
         [Required]
