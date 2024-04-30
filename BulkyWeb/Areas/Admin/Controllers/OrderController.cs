@@ -23,8 +23,21 @@ namespace BulkyWeb.Areas.Admin.Controllers
 			return View();
 		}
 
-		#region API CALLS
-		[HttpGet]
+        public IActionResult Details(int orderId)
+        {
+			OrderVM orderVM = new()
+			{
+				
+				
+				OrderHeader =_unitOfWork.OrderHeader.Get(x => x.Id == orderId, includeProperties:"ApplicationUser"),
+				OrderDetail = _unitOfWork.OrderDetail.GetAll(x => x.OrderHeaderId == orderId)
+
+			};
+            return View(orderVM);
+        }
+
+        #region API CALLS
+        [HttpGet]
 		public IActionResult GetAll(string status)
 		{
 			IEnumerable<OrderHeader> objOrderHeaders = _unitOfWork.OrderHeader.GetAll(includeProperties: "ApplicationUser").ToList();
