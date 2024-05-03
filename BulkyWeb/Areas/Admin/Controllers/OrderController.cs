@@ -2,9 +2,11 @@
 using Bulky.Models;
 using Bulky.Models.ViewModels;
 using Bulky.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Security.Claims;
 
 namespace BulkyWeb.Areas.Admin.Controllers
 {
@@ -12,7 +14,8 @@ namespace BulkyWeb.Areas.Admin.Controllers
 	public class OrderController : Controller
 	{
 		private readonly IUnitOfWork _unitOfWork;
-
+		[BindProperty]
+		public OrderVM OrderVM { get;set; }
 		public OrderController(IUnitOfWork unitOfWork)
 		{
 			_unitOfWork = unitOfWork;
@@ -25,13 +28,39 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
         public IActionResult Details(int orderId)
         {
-			OrderVM orderVM = new()
+            OrderVM = new()
 			{
 				OrderHeader =_unitOfWork.OrderHeader.Get(x => x.Id == orderId, includeProperties:"ApplicationUser"),
 				OrderDetail = _unitOfWork.OrderDetail.GetAll(x => x.OrderHeaderId == orderId, includeProperties: "Product")
 
 			};
-            return View(orderVM);
+            return View(OrderVM);
+        }
+
+		[HttpPost]
+		[Authorize(Roles= SD.Role_Admin + "," + SD.Role_Employee)]
+        public IActionResult UpdateOrderDetail(int orderId)
+        {
+			var orderHeaderFromDb = _unitOfWork.OrderHeader.Get(x => x.Id == OrderVM.OrderHeader.Id);
+			orderHeaderFromDb.Name = OrderVM.OrderHeader.Name;
+			orderHeaderFromDb.PhoneNumber = OrderVM.OrderHeader.PhoneNumber;
+			orderHeaderFromDb.StreetAddress = OrderVM.OrderHeader.StreetAddress;
+			orderHeaderFromDb.City = OrderVM.OrderHeader.City;
+			orderHeaderFromDb.State = OrderVM.OrderHeader.State;
+			orderHeaderFromDb.PostalCode = OrderVM.OrderHeader.PostalCode;
+			if (!string.IsNullOrEmpty(OrderVM.OrderHeader.Carrier))
+			{
+				orderHeaderFromDb.Carrier = OrderVM.OrderHeader.Carrier;
+			}
+            if (!string.IsNullOrEmpty(OrderVM.OrderHeader.TrackingNumber))
+            {
+                orderHeaderFromDb.Carrier = OrderVM.OrderHeader.TrackingNumber;
+            }
+			_unitOfWork.OrderHeader.Update(orderHeaderFromDb);
+			_unitOfWork.Save();
+			TempData["Success"] = "Order Details Updated Successfully";
+
+            return RedirectToAction(nameof(Details),new {orderId = orderHeaderFromDb.Id});
         }
 
         #region API CALLS
@@ -39,6 +68,19 @@ namespace BulkyWeb.Areas.Admin.Controllers
 		public IActionResult GetAll(string status)
 		{
 			IEnumerable<OrderHeader> objOrderHeaders = _unitOfWork.OrderHeader.GetAll(includeProperties: "ApplicationUser").ToList();
+
+			if(User.IsInRole(SD.Role_Admin) || User.IsInRole(SD.Role_Employee))
+			{
+				objOrderHeaders = _unitOfWork.OrderHeader.GetAll(includeProperties: "ApplicationUser").ToList();
+			}
+			else
+			{
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+                objOrderHeaders = _unitOfWork.OrderHeader.GetAll(x => x.ApplicationUserId == userId, includeProperties: "ApplicationUser");
+
+			}
 
 			switch (status)
 			{
