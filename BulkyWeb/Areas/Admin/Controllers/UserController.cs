@@ -18,7 +18,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
     {
         //private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _webHostEnviroment;
-        private ApplicationDbContext _db;
+        private readonly ApplicationDbContext _db;
         private readonly UserManager<IdentityUser> _userManager;
         public UserController(ApplicationDbContext db,UserManager<IdentityUser> userManager)
         {
@@ -37,22 +37,22 @@ namespace BulkyWeb.Areas.Admin.Controllers
         {
             string RoleID = _db.UserRoles.FirstOrDefault(x => x.UserId == userId).RoleId;
 
-            RoleManagementVM RoleVM = new RoleManagementVM() {
+            RoleManagementVM RoleVM = new RoleManagementVM()
+            {
                 ApplicationUser = _db.ApplicationUsers.Include(u => u.Company).FirstOrDefault(u => u.Id == userId),
-                RoleList = _db.Roles.Select(x => new SelectListItem
+                RoleList = _db.Roles.Select(i => new SelectListItem
                 {
-                    Text = x.Name,
-                    Value = x.Name
+                    Text = i.Name,
+                    Value = i.Name
                 }),
-                CompanyList = _db.Companies.Select(x=> new SelectListItem
+                CompanyList = _db.Companies.Select(i => new SelectListItem
                 {
-                    Text = x.Name,
-                    Value = x.Id.ToString()
-                })
-
+                    Text = i.Name,
+                    Value = i.Id.ToString()
+                }),
             };
-            RoleVM.ApplicationUser.Role = _db.Roles.FirstOrDefault(x => x.Id == RoleID).Name;
-            
+            RoleVM.ApplicationUser.Role = _db.Roles.FirstOrDefault(u => u.Id == RoleID).Name;
+
             return View(RoleVM);
 
         }
@@ -63,7 +63,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
             string RoleID = _db.UserRoles.FirstOrDefault(x => x.UserId == roleManagementVM.ApplicationUser.Id).RoleId;
             string oldRole = _db.Roles.FirstOrDefault(x => x.Id == RoleID).Name;
 
-            if(!(roleManagementVM.ApplicationUser.Role == oldRole))
+            if (!(roleManagementVM.ApplicationUser.Role == oldRole))
             {
                 ApplicationUser applicationUser = _db.ApplicationUsers.FirstOrDefault(x => x.Id == roleManagementVM.ApplicationUser.Id);
 
@@ -89,26 +89,26 @@ namespace BulkyWeb.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<ApplicationUser> objUserList = _db.ApplicationUsers.Include(x=>x.Company).ToList();
+            List<ApplicationUser> objUserList = _db.ApplicationUsers.Include(u => u.Company).ToList();
 
             var userRoles = _db.UserRoles.ToList();
             var roles = _db.Roles.ToList();
 
-
-            foreach(var user in objUserList)
+            foreach (var user in objUserList)
             {
-                var roleId = userRoles.FirstOrDefault(x=>x.UserId == user.Id).RoleId;
-                user.Role = roles.FirstOrDefault(x => x.Id == roleId).Name;
 
-                if(user.Company == null)
+                var roleId = userRoles.FirstOrDefault(u => u.UserId == user.Id).RoleId;
+
+                user.Role = roles.FirstOrDefault(u => u.Id == roleId).Name;
+
+                if (user.Company == null)
                 {
-                    user.Company = new Company ()
-                    { 
-                        Name = "" 
+                    user.Company = new Company()
+                    {
+                        Name = ""
                     };
                 }
             }
-
 
             return Json(new { data = objUserList });
         }
