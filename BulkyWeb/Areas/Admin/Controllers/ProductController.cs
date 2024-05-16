@@ -58,7 +58,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
             else
             {
                 //Update
-                productVM.Product = _unitOfWork.Product.Get(x => x.Id == id);
+                productVM.Product = _unitOfWork.Product.Get(x => x.Id == id, includeProperties : "ProductImages");
                 return View(productVM);
             }
 
@@ -160,6 +160,30 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
         }
 
+        public IActionResult DeleteImage(int imageId)
+        {
+            var imageToBeDelete = _unitOfWork.ProductImage.Get(x => x.Id == imageId);
+            int productId = imageToBeDelete.ProductId;
+
+            if(imageToBeDelete != null)
+            {
+                if(!string.IsNullOrEmpty(imageToBeDelete.ImageUrl))
+                {
+                    var oldImagePath = Path.Combine(_webHostEnviroment.WebRootPath, imageToBeDelete.ImageUrl.TrimStart('\\'));
+
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+                _unitOfWork.ProductImage.Remove(imageToBeDelete);
+                _unitOfWork.Save();
+
+                TempData["success"] = "Deleted successfully";
+            }
+            return RedirectToAction(nameof(Upsert), new {id=productId});
+        }
+
         //public IActionResult Edit(int? id)
         //{
         //    if (id == null || id == 0)
@@ -239,6 +263,24 @@ namespace BulkyWeb.Areas.Admin.Controllers
             //{
             //    System.IO.File.Delete(oldImagePath);
             //}
+            string productPath = @"images\products\product-" + id;
+            //Where the product is going to be stored
+            string finalPath = Path.Combine(_webHostEnviroment.WebRootPath, productPath);
+
+            if (!Directory.Exists(finalPath))
+            {
+                string[] filePaths = Directory.GetFiles(finalPath);
+                foreach(var filePath in filePaths)
+                {
+                    System.IO.File.Delete(filePath);
+
+                }
+
+
+                Directory.Delete(finalPath);
+            }
+
+
             _unitOfWork.Product.Remove(productToBeDeleted);
             _unitOfWork.Save();
             return Json(new { success = true, message = "Delete successfull" });
